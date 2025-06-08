@@ -28,16 +28,8 @@ class UserService(private val userRepository: UserRepository) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid email format")
         }
 
-        val optionalExistingUser = userRepository.findById(id)
-        return if (optionalExistingUser.isPresent) {
-            val existingUser = optionalExistingUser.get()
-            existingUser.name = user.name
-            existingUser.email = user.email
-            userRepository.save(existingUser)
-            existingUser
-        } else {
-            null
-        }
+        val optionalExistingUser : User = userRepository.findById(id).get().apply { user }
+        return userRepository.save(optionalExistingUser)
     }
 
     fun deleteUser(id: Long) {
