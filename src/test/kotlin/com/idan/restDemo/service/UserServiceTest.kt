@@ -2,93 +2,89 @@ package com.idan.restDemo.service
 
 import com.idan.restDemo.model.User
 import com.idan.restDemo.repository.UserRepository
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
-import java.util.Optional
-import org.junit.jupiter.api.assertThrows
-import org.springframework.web.server.ResponseStatusException
+import org.junit.jupiter.api.*
+import org.mockito.kotlin.*
 import org.springframework.http.HttpStatus
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.times
+import org.springframework.web.server.ResponseStatusException
+import java.util.*
 
 class UserServiceTest {
 
     private val userRepository: UserRepository = mock()
-    private val userService = UserService(userRepository)
+    private lateinit var userService: UserService
+
+    private lateinit var testUser: User
+
+    @BeforeEach
+    fun setUp() {
+        testUser = User(1, "Idan", "idan@email.com")
+        userService = UserService(userRepository)
+    }
 
     @Test
     fun testGetAllUsers() {
         // Arrange
-        val user = User(1, "Idan", "idan@email.com")
-        val usersList = listOf(user)
-        whenever(userRepository.findAll()).thenReturn(usersList)
+        whenever(userRepository.findAll()).thenReturn(listOf(testUser))
 
         // Act
         val result = userService.getAllUsers()
 
         // Assert
-        assertEquals(usersList, result)
+        Assertions.assertEquals(listOf(testUser), result)
     }
 
     @Test
     fun testGetUserById() {
         // Arrange
-        val user = User(1, "Idan", "idan@email.com")
-        whenever(userRepository.findById(1)).thenReturn(Optional.of(user))
+        whenever(userRepository.findById(1)).thenReturn(Optional.of(testUser))
         whenever(userRepository.findById(2)).thenReturn(Optional.empty())
 
         // Act
-        val result = userService.getUserById(1)
+        val result1 = userService.getUserById(1)
         val result2 = userService.getUserById(2)
 
         // Assert
-        assertNotNull(result)
-        assertEquals("Idan", result?.name)
-        assertNull(result2)
+        kotlin.test.assertNotNull(result1)
+        Assertions.assertEquals("Idan", result1?.name)
+        kotlin.test.assertNull(result2)
     }
 
     @Test
     fun testUpdateUser() {
         // Arrange
-        val user = User(1, "Idan", "idan@email.com")
-        val updatedUser = User(1, "Updated Name", "updated@email.com")
-        whenever(userRepository.findById(1)).thenReturn(Optional.of(user))
-        whenever(userRepository.save(user)).thenReturn(updatedUser)
+        val updatedUser = testUser.copy(name = "Updated Name", email = "idan@email.com")
+        whenever(userRepository.findById(1)).thenReturn(Optional.of(testUser))
+        whenever(userRepository.save(testUser)).thenReturn(updatedUser)
 
         // Act
         val result = userService.updateUser(1, updatedUser)
 
         // Assert
-        assertNotNull(result)
-        assertEquals("Updated Name", result.name)
-        assertEquals("updated@email.com", result.email)
+        kotlin.test.assertNotNull(result)
+        Assertions.assertEquals("Updated Name", result.name)
+        Assertions.assertEquals("idan@email.com", result.email)
     }
 
     @Test
     fun testUpdateUser_InvalidInput() {
         // Arrange
-        val user = User(1, "Idan", "idan@email.com")
-        val invalidUser1 = User(1, "", "idan@email.com")
-        val invalidUser2 = User(1, "Idan", "invalid-email")
+        val invalidUser1 = testUser.copy(name = "")
+        val invalidUser2 = testUser.copy(email = "invalid-email")
 
-        whenever(userRepository.findById(1)).thenReturn(Optional.of(user))
+        whenever(userRepository.findById(1)).thenReturn(Optional.of(testUser))
 
         // Act & Assert
         val exception1 = assertThrows<ResponseStatusException> {
             userService.updateUser(1, invalidUser1)
         }
-        assertEquals(HttpStatus.BAD_REQUEST.value(), exception1.statusCode.value())
-        assertEquals("Name and email cannot be empty", exception1.reason)
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), exception1.statusCode.value())
+        Assertions.assertEquals("Name and email cannot be empty", exception1.reason)
 
         val exception2 = assertThrows<ResponseStatusException> {
             userService.updateUser(1, invalidUser2)
         }
-        assertEquals(HttpStatus.BAD_REQUEST.value(), exception2.statusCode.value())
-        assertEquals("Invalid email format", exception2.reason)
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), exception2.statusCode.value())
+        Assertions.assertEquals("Invalid email format", exception2.reason)
     }
 
     @Test

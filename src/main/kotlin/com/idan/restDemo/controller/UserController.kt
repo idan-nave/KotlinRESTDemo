@@ -1,11 +1,17 @@
-package com.idan.restDemo
+package com.idan.restDemo.controller
 
 import com.idan.restDemo.model.User
 import com.idan.restDemo.service.UserService
 import org.springframework.http.HttpStatus
-import org.springframework.web.bind.annotation.*
-import org.springframework.web.server.ResponseStatusException
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.server.ResponseStatusException
 
 @RestController
 @RequestMapping("/users")
